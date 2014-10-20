@@ -16,6 +16,9 @@
 # Fortran module files
 *.mod
 
+# Python bytecode
+*.pyc
+
 # Compiled Static libraries
 *.lai
 *.la
@@ -26,3 +29,14 @@
 *.exe
 *.out
 *.app
+
+# CMake files
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+
+# vim files
+*.swp
+*.swo
+.ycm_extra_conf.py
