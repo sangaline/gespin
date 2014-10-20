@@ -9,4 +9,8 @@ class Nucleon {
     double X() { return x; }
     double Y() { return y; }
     double Z() { return z; }
+    void SetX(double newx) { x = newx; }
+    void SetY(double newy) { y = newy; }
+    void SetZ(double newz) { z = newz; }
+    void SetPosition(double newx, double newy, double newz) { x = newx; y = newy; z = newz; }
 };
