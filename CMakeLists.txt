@@ -16,8 +16,7 @@ IF(static)
     MESSAGE("Building static version of the library.")
 ENDIF(static)
 
-#don't add lib before the library
-SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES PREFIX "./")
+SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES PREFIX "./lib/lib")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 IF(NOT CMAKE_BUILD_TYPE)
