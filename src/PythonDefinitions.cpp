@@ -30,6 +30,9 @@ BOOST_PYTHON_MODULE(core)
         .add_property("x", &Nucleon::X, &Nucleon::SetX)
         .add_property("y", &Nucleon::Y, &Nucleon::SetY)
         .add_property("z", &Nucleon::Z, &Nucleon::SetZ)
+        .add_property("r", &Nucleon::R, &Nucleon::SetR)
+        .add_property("theta", &Nucleon::Theta, &Nucleon::SetTheta)
+        .add_property("phi", &Nucleon::Phi, &Nucleon::SetPhi)
         .add_property("position", &NucleonHelpers::GetPosition, &NucleonHelpers::SetPosition)
     ;
 /********************************************************/
