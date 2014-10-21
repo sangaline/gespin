@@ -2,7 +2,7 @@
 
 #include "math.h"
 
-Nucleon::Nucleon(double x, double y, double z, double radius, NucleonType identity)
+Nucleon::Nucleon(double x, double y, double z, double radius, NucleonIdentity identity)
   : x(x), y(y), z(z), radius(radius), identity(identity) {
 
 }

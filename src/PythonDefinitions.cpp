@@ -24,6 +24,16 @@ namespace NucleonHelpers {
 
 BOOST_PYTHON_MODULE(core)
 {
+/***************** Nucleon identitys ***********************/
+    enum_<NucleonIdentity>("nucleon_identities")
+        .value("unspecified", NucleonIdentity::unspecified)
+        .value("proton", NucleonIdentity::proton)
+        .value("neutron", NucleonIdentity::neutron)
+        .value("antiproton", NucleonIdentity::antiproton)
+        .value("antineutron", NucleonIdentity::antineutron)
+    ;
+/********************************************************/
+
 /***************** Nucleon class ***********************/
     class_<Nucleon>("Nucleon", init<double, double, double>())
         .def(init<>())
@@ -34,6 +44,8 @@ BOOST_PYTHON_MODULE(core)
         .add_property("theta", &Nucleon::Theta, &Nucleon::SetTheta)
         .add_property("phi", &Nucleon::Phi, &Nucleon::SetPhi)
         .add_property("position", &NucleonHelpers::GetPosition, &NucleonHelpers::SetPosition)
+        .add_property("radius", &Nucleon::Radius, &Nucleon::SetRadius)
+        .add_property("identity", &Nucleon::Identity, &Nucleon::SetIdentity);
     ;
 /********************************************************/
 }
