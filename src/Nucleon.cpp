@@ -8,6 +8,18 @@ Nucleon::Nucleon(double x, double y, double z, double radius, NucleonIdentity id
 
 }
 
+//the parent is maintained and a new cube is calculated
+Nucleon& Nucleon::operator=(const Nucleon &nucleon) {
+    x = nucleon.x;
+    y = nucleon.y;
+    z = nucleon.z;
+    radius = nucleon.radius;
+    identity = nucleon.identity;
+    cube = &parent->FindCube(x, y, z);
+
+    return *this;
+}
+
 double Nucleon::R()  const {
     return sqrt(x*x + y*y + z*z);
 }
