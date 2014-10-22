@@ -27,6 +27,44 @@ namespace NucleonHelpers {
 }
 /********************************************************/
 
+/***************** NucleonCollection helpers ************/
+namespace NucleonCollectionHelpers {
+    //the return list is by proxy
+    list GetNucleonList(NucleonCollection& nucleon_collection) {
+        list l;
+        for(unsigned int i = 0; i < nucleon_collection.NucleonCount(); i++) {
+            l.append(Nucleon(nucleon_collection[i]));
+        }
+        return l;
+    }
+
+    //the setting is by proxy as well
+    void SetNucleonList(NucleonCollection& nucleon_collection, list l) {
+        nucleon_collection.Reset();
+        for(unsigned int i = 0; i < len(l); i++) {
+            nucleon_collection.AddNucleon(extract<Nucleon>(l[i]));
+        }
+    }
+
+    //[] access is by reference, so nucleon_collection[0].x += 5 works
+    Nucleon& GetNucleon(NucleonCollection& nucleon_collection, int index) {
+        if(index >= int(nucleon_collection.NucleonCount())) {
+            PyErr_SetString(PyExc_StopIteration, "No more data.");
+            throw_error_already_set();
+        }
+        if(index < 0) {
+            index = index % nucleon_collection.NucleonCount();
+        }
+        return nucleon_collection[index];
+    }
+
+    void SetNucleon(NucleonCollection& nucleon_collection, int index, Nucleon& nucleon) {
+        //the nucleon assignment operator must preserve the parent
+        nucleon_collection[index] = nucleon;
+    }
+};
+/********************************************************/
+
 BOOST_PYTHON_MODULE(core)
 {
 /***************** Nucleon identities ***********************/
