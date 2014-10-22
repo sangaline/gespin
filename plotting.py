@@ -24,7 +24,7 @@ color_map = { nucleon_identities.unspecified : (208/255, 177/255, 33/255), \
             }
 
 def draw_nucleons(nucleons, alpha = 0.1):
-    if not hasattr(nucleons, '__contains__'):
+    if not hasattr(nucleons, '__len__'):
         return draw_nucleons([nucleons])
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
