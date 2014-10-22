@@ -15,6 +15,7 @@ class Nucleon {
     std::vector<Nucleon*> *cube;
   public:
     Nucleon(double x = 0, double y = 0, double z = 0, double radius = 0.8768, NucleonIdentity identity = NucleonIdentity::unspecified);
+    Nucleon& operator =(const Nucleon &nucleon);
 
     //property getters
     double Radius() { return radius; }
