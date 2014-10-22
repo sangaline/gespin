@@ -1,11 +1,18 @@
 #pragma once
 
+#include <vector>
+
+class NucleonCollection;
+
 enum class NucleonIdentity { unspecified, proton, neutron, antineutron, antiproton };
 class Nucleon {
   private:
     double x, y, z;
     double radius;
     NucleonIdentity identity;
+
+    NucleonCollection *parent;
+    std::vector<Nucleon*> *cube;
   public:
     Nucleon(double x = 0, double y = 0, double z = 0, double radius = 0.8768, NucleonIdentity identity = NucleonIdentity::unspecified);
 
@@ -26,11 +33,13 @@ class Nucleon {
     double Phi() const;
 
     //position setters
-    void SetX(double new_x) { x = new_x; }
-    void SetY(double new_y) { y = new_y; }
-    void SetZ(double new_z) { z = new_z; }
+    void SetX(double new_x) { SetPosition(new_x, Y(), Z()); }
+    void SetY(double new_y) { SetPosition(X(), new_y, Z()); }
+    void SetZ(double new_z) { SetPosition(X(), Y(), new_z); }
     void SetR(double new_r);
     void SetTheta(double new_theta);
     void SetPhi(double new_phi);
-    void SetPosition(double new_x, double new_y, double new_z) { x = new_x; y = new_y; z = new_z; }
+    void SetPosition(double new_x, double new_y, double new_z);
+
+    friend class NucleonCollection;
 };

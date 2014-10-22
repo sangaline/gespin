@@ -1,9 +1,10 @@
 #include "Nucleon.h"
+#include "NucleonCollection.h"
 
 #include "math.h"
 
 Nucleon::Nucleon(double x, double y, double z, double radius, NucleonIdentity identity)
-  : x(x), y(y), z(z), radius(radius), identity(identity) {
+  : x(x), y(y), z(z), radius(radius), identity(identity), parent(0) {
 
 }
 
@@ -37,4 +38,14 @@ void Nucleon::SetPhi(double new_phi) {
     const double r_transverse = sqrt(X()*X() + Y()*Y());
     SetX(r_transverse*cos(new_phi));
     SetY(r_transverse*sin(new_phi));
+}
+void Nucleon::SetPosition(double new_x, double new_y, double new_z) { 
+    if(parent) {
+        parent->SetNucleonPosition(this, new_x, new_y, new_z);
+    }
+    else {
+        x = new_x;
+        y = new_y;
+        z = new_z;
+    }
 }
