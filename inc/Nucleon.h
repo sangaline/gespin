@@ -18,12 +18,12 @@ class Nucleon {
     void SetIdentity(NucleonIdentity new_identity) { identity = new_identity; }
 
     //position getters
-    double X() { return x; }
-    double Y() { return y; }
-    double Z() { return z; }
-    double R();
-    double Theta();
-    double Phi();
+    double X() const { return x; }
+    double Y() const{ return y; }
+    double Z() const{ return z; }
+    double R() const;
+    double Theta() const;
+    double Phi() const;
 
     //position setters
     void SetX(double new_x) { x = new_x; }
