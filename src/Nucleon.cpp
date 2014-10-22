@@ -7,15 +7,15 @@ Nucleon::Nucleon(double x, double y, double z, double radius, NucleonIdentity id
 
 }
 
-double Nucleon::R() {
+double Nucleon::R()  const {
     return sqrt(x*x + y*y + z*z);
 }
 
-double Nucleon::Phi() {
+double Nucleon::Phi() const {
     return atan2(y, x);
 }
 
-double Nucleon::Theta() {
+double Nucleon::Theta() const {
     return atan2(sqrt(x*x + y*y), z);
 }
 
