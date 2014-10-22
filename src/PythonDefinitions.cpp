@@ -9,6 +9,9 @@
 
 using namespace boost::python;
 
+//for general use in deep copying
+template<typename T> const T DeepCopy(const T& v, dict d) { return T(v); }
+
 /***************** Nucleon helpers *********************/
 namespace NucleonHelpers {
     tuple GetPosition(Nucleon& nucleon) {
@@ -37,6 +40,7 @@ BOOST_PYTHON_MODULE(core)
 /***************** Nucleon class ***********************/
     class_<Nucleon>("Nucleon", init<double, double, double>())
         .def(init<>())
+        .def("__deepcopy__", &DeepCopy<Nucleon>)
         .add_property("x", &Nucleon::X, &Nucleon::SetX)
         .add_property("y", &Nucleon::Y, &Nucleon::SetY)
         .add_property("z", &Nucleon::Z, &Nucleon::SetZ)
