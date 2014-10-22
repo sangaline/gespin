@@ -3,16 +3,18 @@
 #include <boost/python/module.hpp>
 #include <boost/python/tuple.hpp>
 #include <boost/python/extract.hpp>
+#include <boost/python/errors.hpp>
 
 //gespin include files
 #include "Nucleon.h"
+#include "NucleonCollection.h"
 
 using namespace boost::python;
 
 //for general use in deep copying
 template<typename T> const T DeepCopy(const T& v, dict d) { return T(v); }
 
-/***************** Nucleon helpers *********************/
+/***************** Nucleon helpers **********************/
 namespace NucleonHelpers {
     tuple GetPosition(Nucleon& nucleon) {
         return make_tuple(nucleon.X(), nucleon.Y(), nucleon.Z());
@@ -27,7 +29,7 @@ namespace NucleonHelpers {
 
 BOOST_PYTHON_MODULE(core)
 {
-/***************** Nucleon identitys ***********************/
+/***************** Nucleon identities ***********************/
     enum_<NucleonIdentity>("nucleon_identities")
         .value("unspecified", NucleonIdentity::unspecified)
         .value("proton", NucleonIdentity::proton)
@@ -49,7 +51,7 @@ BOOST_PYTHON_MODULE(core)
         .add_property("phi", &Nucleon::Phi, &Nucleon::SetPhi)
         .add_property("position", &NucleonHelpers::GetPosition, &NucleonHelpers::SetPosition)
         .add_property("radius", &Nucleon::Radius, &Nucleon::SetRadius)
-        .add_property("identity", &Nucleon::Identity, &Nucleon::SetIdentity);
+        .add_property("identity", &Nucleon::Identity, &Nucleon::SetIdentity)
     ;
 /********************************************************/
 }
