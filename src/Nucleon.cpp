@@ -15,7 +15,7 @@ Nucleon& Nucleon::operator=(const Nucleon &nucleon) {
     z = nucleon.z;
     radius = nucleon.radius;
     identity = nucleon.identity;
-    cube = &parent->FindCube(x, y, z);
+    cube = &parent->FindCube(x, y, z, cube_i, cube_j, cube_k);
 
     return *this;
 }

@@ -13,6 +13,7 @@ class Nucleon {
 
     NucleonCollection *parent;
     std::vector<Nucleon*> *cube;
+    int cube_i, cube_j, cube_k;
   public:
     Nucleon(double x = 0, double y = 0, double z = 0, double radius = 0.8768, NucleonIdentity identity = NucleonIdentity::unspecified);
     Nucleon& operator =(const Nucleon &nucleon);
