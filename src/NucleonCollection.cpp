@@ -17,6 +17,8 @@ NucleonCollection::NucleonCollection(double pairwise_max, unsigned int units, do
     //the default likelihood will be 1 regardless of the configuration
     single_likelihood = [](Nucleon&) { return 1; };
     pairwise_likelihood = [](Nucleon&, Nucleon&) { return 1; };
+
+    cached_nucleon = 0;
 }
 
 NucleonCollection::NucleonCollection(const NucleonCollection &nucleon_collection) {
@@ -156,7 +158,22 @@ void NucleonCollection::BringInsideRegion(Nucleon *nucleon) {
     while(nucleon->z < -length) nucleon->z += 2.0*length;
 }
 
+bool NucleonCollection::UndoLastMove() {
+    if(cached_nucleon) {
+        SetNucleonPosition(cached_nucleon, cached_x, cached_y, cached_z);
+        //these is the key part, in case the last move resulted in a likelihood of 0
+        likelihood = cached_likelihood;
+        cached_nucleon = 0;
+        return true;
+    }
+    return false;
+}
+
 void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y, double z) {
+    cached_likelihood = likelihood;
+    cached_x = x; cached_y = y; cached_z = z;
+    cached_nucleon = nucleon;
+
     nucleon_array new_cube = FindCube(x, y, z, nucleon->cube_i, nucleon->cube_j, nucleon->cube_k);
     if(&new_cube == nucleon->cube) {
         likelihood /= nucleon->single_likelihood;

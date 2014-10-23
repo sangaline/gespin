@@ -141,6 +141,7 @@ BOOST_PYTHON_MODULE(core)
         .def("single_likelihood", &NucleonCollectionHelpers::CallBack::default_SingleLikelihood)
         .def("pairwise_likelihood", &NucleonCollectionHelpers::CallBack::default_PairwiseLikelihood)
         .def("update_likelihood", &NucleonCollection::UpdateLikelihood)
+        .def("undo_last_move", &NucleonCollection::UndoLastMove)
         .add_property("likelihood", &NucleonCollection::Likelihood)
     ;
 /********************************************************/
