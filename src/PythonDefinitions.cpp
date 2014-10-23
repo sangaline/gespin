@@ -95,7 +95,7 @@ BOOST_PYTHON_MODULE(core)
 
 /***************** Nucleon Collection *******************/
     class_<NucleonCollection>("NucleonCollection", init<>())
-        .def(init<unsigned int, double>())
+        .def(init<double, unsigned int, double>())
         .def("__len__", &NucleonCollection::NucleonCount)
         .def("__getitem__", &NucleonCollectionHelpers::GetNucleon, boost::python::return_internal_reference<>())
         .def("__setitem__", &NucleonCollectionHelpers::SetNucleon)

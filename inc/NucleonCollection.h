@@ -17,11 +17,12 @@ class NucleonCollection {
     //the full number of cubes is thus (2*units)^3
     unsigned int units;
     double length, cube_length;
+    unsigned int pairwise_units;
 
     void RemoveNucleonFromCube(Nucleon *nucleon);
     void RemoveNucleonFromOrdered(Nucleon *nucleon);
   public:
-    NucleonCollection(unsigned int units = 10, double length = 20);
+    NucleonCollection(double pairwise_max = 0, unsigned int units = 10, double length = 20);
     NucleonCollection(const NucleonCollection &nucleon_collection);
     ~NucleonCollection();
 

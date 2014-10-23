@@ -3,8 +3,9 @@
 
 #include "math.h"
 
-NucleonCollection::NucleonCollection(unsigned int units, double length)
-  : nucleon_count(0), units(units), length(length), cube_length(length/units) {
+NucleonCollection::NucleonCollection(double pairwise_max, unsigned int units, double length)
+  : likelihood(1), nucleon_count(0), units(units), length(length), cube_length(length/units) {
+    pairwise_units = ceil(pairwise_max/cube_length);
     cubes = new nucleon_array** [2*units];
     for(unsigned int i = 0; i < 2*units; i++) {
         cubes[i] = new nucleon_array* [2*units];
