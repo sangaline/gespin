@@ -62,6 +62,38 @@ namespace NucleonCollectionHelpers {
         //the nucleon assignment operator must preserve the parent
         nucleon_collection[index] = nucleon;
     }
+
+    struct CallBack : NucleonCollection {
+        CallBack(PyObject *p)
+            : NucleonCollection(), self(p) {}
+        CallBack(PyObject *p, const NucleonCollection& nucleon_collection)
+            : NucleonCollection(nucleon_collection), self(p) {}
+        CallBack(PyObject *p, double &pairwise_max)
+            : NucleonCollection(pairwise_max), self(p) {}
+        CallBack(PyObject *p, double pairwise_max, unsigned int units)
+            : NucleonCollection(pairwise_max, units), self(p) {}
+        CallBack(PyObject *p, double pairwise_max, unsigned int units, double length)
+            : NucleonCollection(pairwise_max, units, length), self(p) {}
+
+        double SingleLikelihood(Nucleon &nucleon) const {
+            return call_method<double>(self, "single_likelihood", nucleon);
+        }
+
+        static double default_SingleLikelihood(const NucleonCollection& self_, Nucleon &nucleon) {
+            return self_.NucleonCollection::SingleLikelihood(nucleon);
+        }
+
+        double PairwiseLikelihood(Nucleon &nucleon1, Nucleon &nucleon2) const {
+            return call_method<double>(self, "pairwise_likelihood", nucleon1, nucleon2);
+        }
+
+        static double default_PairwiseLikelihood(const NucleonCollection& self_, Nucleon &nucleon1, Nucleon &nucleon2) {
+            return self_.NucleonCollection::PairwiseLikelihood(nucleon1, nucleon2);
+        }
+
+      private:
+        PyObject* self;
+    };
 };
 /********************************************************/
 
@@ -94,7 +126,9 @@ BOOST_PYTHON_MODULE(core)
 /********************************************************/
 
 /***************** Nucleon Collection *******************/
-    class_<NucleonCollection>("NucleonCollection", init<>())
+    class_<NucleonCollection, NucleonCollectionHelpers::CallBack>("NucleonCollection", init<>())
+        .def(init<double>())
+        .def(init<double, unsigned int>())
         .def(init<double, unsigned int, double>())
         .def("__len__", &NucleonCollection::NucleonCount)
         .def("__getitem__", &NucleonCollectionHelpers::GetNucleon, boost::python::return_internal_reference<>())
@@ -104,6 +138,9 @@ BOOST_PYTHON_MODULE(core)
         .def("reset", &NucleonCollection::Reset)
         .def("Nucleons", &NucleonCollectionHelpers::GetNucleonList)
         .def("SetNucleons", &NucleonCollectionHelpers::SetNucleonList)
+        .def("single_likelihood", &NucleonCollectionHelpers::CallBack::default_SingleLikelihood)
+        .def("pairwise_likelihood", &NucleonCollectionHelpers::CallBack::default_PairwiseLikelihood)
+        .def("update_likelihood", &NucleonCollection::UpdateLikelihood)
         .add_property("likelihood", &NucleonCollection::Likelihood)
     ;
 /********************************************************/
