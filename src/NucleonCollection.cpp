@@ -13,6 +13,10 @@ NucleonCollection::NucleonCollection(double pairwise_max, unsigned int units, do
             cubes[i][j] = new nucleon_array [2*units];
         }
     }
+
+    //the default likelihood will be 1 regardless of the configuration
+    single_likelihood = [](Nucleon&) { return 1; };
+    pairwise_likelihood = [](Nucleon&, Nucleon&) { return 1; };
 }
 
 NucleonCollection::NucleonCollection(const NucleonCollection &nucleon_collection) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 
 class Nucleon;
 
@@ -21,6 +22,9 @@ class NucleonCollection {
 
     void RemoveNucleonFromCube(Nucleon *nucleon);
     void RemoveNucleonFromOrdered(Nucleon *nucleon);
+
+    std::function<double(Nucleon&)> single_likelihood;
+    std::function<double(Nucleon&, Nucleon&)> pairwise_likelihood;
   public:
     NucleonCollection(double pairwise_max = 0, unsigned int units = 10, double length = 20);
     NucleonCollection(const NucleonCollection &nucleon_collection);
@@ -44,4 +48,7 @@ class NucleonCollection {
     nucleon_array& FindCube(double x, double y, double z, int &i, int &j, int &k);
     nucleon_array& FindCube(double x, double y, double z) const;
     nucleon_array& FindCube(const Nucleon &nucleon) const;
+
+    virtual double SingleLikelihood(Nucleon &nucleon) { return single_likelihood(nucleon); }
+    virtual double PairwiseLikelihood(Nucleon &nucleon1, Nucleon &nucleon2) { return pairwise_likelihood(nucleon1, nucleon2); }
 };
