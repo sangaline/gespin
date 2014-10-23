@@ -155,15 +155,35 @@ void NucleonCollection::BringInsideRegion(Nucleon *nucleon) {
 void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y, double z) {
     nucleon_array new_cube = FindCube(x, y, z, nucleon->cube_i, nucleon->cube_j, nucleon->cube_k);
     if(&new_cube == nucleon->cube) {
-        //TODO: here we can just update the nucleons in the list
-    }
+        likelihood /= nucleon->single_likelihood;
+        nucleon->single_likelihood = SingleLikelihood(*nucleon);
+        likelihood *= nucleon->single_likelihood;
 
-    NucleonCollection::nucleon_array::iterator insert_point = RemoveNucleon(nucleon);
-    nucleon->x = x;
-    nucleon->y = y;
-    nucleon->z = z;
-    InsertNucleon(*nucleon, insert_point);
-    delete nucleon;
+        std::vector< std::pair<Nucleon*, double> >::iterator it1;
+        for(it1 = nucleon->pairwise_likelihoods.begin(); it1 != nucleon->pairwise_likelihoods.end(); it1++) {
+            Nucleon *nucleon2 = it1->first;
+            likelihood /= it1->second;
+            it1->second = PairwiseLikelihood(*nucleon, *nucleon2);
+            likelihood *= it1->second;
+
+            std::vector< std::pair<Nucleon*, double> >::iterator it2;
+            for(it2 = nucleon2->pairwise_likelihoods.begin(); it2 != nucleon2->pairwise_likelihoods.end(); it2++) {
+                if(nucleon == (*it2).first) {
+                    it2->second = it1->second;
+                    nucleon2->pairwise_likelihoods.erase(it2);
+                    break;
+                }
+            }
+        }
+    }
+    else {
+      NucleonCollection::nucleon_array::iterator insert_point = RemoveNucleon(nucleon);
+      nucleon->x = x;
+      nucleon->y = y;
+      nucleon->z = z;
+      InsertNucleon(*nucleon, insert_point);
+      delete nucleon;
+    }
 }
 
 NucleonCollection::nucleon_array::iterator NucleonCollection::RemoveNucleonFromCube(Nucleon *nucleon) {
