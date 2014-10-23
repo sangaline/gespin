@@ -53,4 +53,5 @@ class NucleonCollection {
 
     virtual double SingleLikelihood(Nucleon &nucleon) { return single_likelihood(nucleon); }
     virtual double PairwiseLikelihood(Nucleon &nucleon1, Nucleon &nucleon2) { return pairwise_likelihood(nucleon1, nucleon2); }
+    double Likelihood() { return likelihood; }
 };

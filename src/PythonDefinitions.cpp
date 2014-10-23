@@ -104,6 +104,7 @@ BOOST_PYTHON_MODULE(core)
         .def("reset", &NucleonCollection::Reset)
         .def("Nucleons", &NucleonCollectionHelpers::GetNucleonList)
         .def("SetNucleons", &NucleonCollectionHelpers::SetNucleonList)
+        .add_property("likelihood", &NucleonCollection::Likelihood)
     ;
 /********************************************************/
 }
