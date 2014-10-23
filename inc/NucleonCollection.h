@@ -13,6 +13,7 @@ class NucleonCollection {
     nucleon_array ordered;
 
     unsigned int nucleon_count;
+    double LikelihoodContribution(Nucleon *nucleon);
 
     //these specify one dimension of one octet
     //the full number of cubes is thus (2*units)^3

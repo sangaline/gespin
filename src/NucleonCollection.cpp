@@ -53,6 +53,38 @@ unsigned int NucleonCollection::AddNucleon(const Nucleon& nucleon) {
     return ++nucleon_count;
 }
 
+double NucleonCollection::LikelihoodContribution(Nucleon *nucleon) {
+    double likelihood_contribution = SingleLikelihood(*nucleon);
+    //in this case the pairwise max is 0 so we only consider single body
+    if(pairwise_units == 0) {
+      return likelihood_contribution;
+    }
+
+    //the key here is that the nucleon is shifted to satisfy the continuous boundary conditions
+    for(int i = nucleon->cube_i - pairwise_units; i <= nucleon->cube_i + pairwise_units; i++) {
+        double x_offset = -2.0*length*double( (i/(2*units)) - (i<0?1:0));
+        nucleon->x += x_offset;
+        for(int j = nucleon->cube_j - pairwise_units; j <= nucleon->cube_j + pairwise_units; j++) {
+            double y_offset = -2.0*length*double( (j/(2*units)) - (j<0?1:0));
+            nucleon->y += y_offset;
+            for(int k = nucleon->cube_k - pairwise_units; k <= nucleon->cube_k + pairwise_units; k++) {
+                double z_offset = -2.0*length*double( (k/(2*units)) - (k<0?1:0));
+                nucleon->z += z_offset;
+                for(nucleon_array::iterator it = cubes[i][j][k].begin(); it != cubes[i][j][k].end(); it++) {
+                    if(*it != nucleon) {
+                        likelihood_contribution *= PairwiseLikelihood(**it, *nucleon);
+                    }
+                }
+                nucleon->z -= z_offset;
+            }
+            nucleon->y -= y_offset;
+        }
+        nucleon->x -= x_offset;
+    }
+
+    return likelihood_contribution;
+}
+
 NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z, int &i, int &j, int &k) {
     remquo(x, cube_length, &i);
     remquo(y, cube_length, &j);
