@@ -40,6 +40,7 @@ class NucleonCollection {
     void SetNucleonZ(Nucleon *nucleon, double z);
     void SetNucleonPosition(Nucleon *nucleon, double x, double y, double z);
 
+    nucleon_array& FindCube(double x, double y, double z, int &i, int &j, int &k);
     nucleon_array& FindCube(double x, double y, double z) const;
     nucleon_array& FindCube(const Nucleon &nucleon) const;
 };

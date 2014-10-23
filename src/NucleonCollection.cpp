@@ -48,8 +48,7 @@ unsigned int NucleonCollection::AddNucleon(const Nucleon& nucleon) {
     return ++nucleon_count;
 }
 
-NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z) const {
-    int i, j, k;
+NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z, int &i, int &j, int &k) {
     remquo(x, cube_length, &i);
     remquo(y, cube_length, &j);
     remquo(z, cube_length, &k);
@@ -62,6 +61,11 @@ NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y
     k = (k + units_minus_one)%units_times_two;
 
     return cubes[i][j][k];
+}
+
+NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z) const {
+    int i, j, k;
+    return FindCube(x, y, z, i, j, k);
 }
 
 NucleonCollection::nucleon_array& NucleonCollection::FindCube(const Nucleon &nucleon) const {
