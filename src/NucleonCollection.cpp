@@ -85,7 +85,7 @@ double NucleonCollection::LikelihoodContribution(Nucleon *nucleon) {
     return likelihood_contribution;
 }
 
-NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z, int &i, int &j, int &k) {
+NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z, int &i, int &j, int &k) const {
     remquo(x, cube_length, &i);
     remquo(y, cube_length, &j);
     remquo(z, cube_length, &k);
