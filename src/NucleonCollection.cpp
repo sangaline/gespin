@@ -44,52 +44,56 @@ NucleonCollection::~NucleonCollection() {
 }
 
 unsigned int NucleonCollection::AddNucleon(const Nucleon& nucleon) {
-  return InsertNucleon(nucleon, ordered.end());
+    return InsertNucleon(nucleon, ordered.end());
 }
 
 unsigned int NucleonCollection::InsertNucleon(const Nucleon& nucleon, NucleonCollection::nucleon_array::iterator insert_point) {
     Nucleon *new_nucleon = new Nucleon(nucleon);
-    BringInsideRegion(new_nucleon);
+    return InsertExistingNucleon(*new_nucleon, insert_point);
+}
 
-    ordered.insert(insert_point, new_nucleon);
+unsigned int NucleonCollection::InsertExistingNucleon(Nucleon& nucleon, NucleonCollection::nucleon_array::iterator insert_point) {
+    BringInsideRegion(&nucleon);
 
-    new_nucleon->cube = &FindCube(new_nucleon->x, new_nucleon->y, new_nucleon->z, \
-                                  new_nucleon->cube_i, new_nucleon->cube_j, new_nucleon->cube_k);
-    new_nucleon->cube->push_back(new_nucleon);
-    new_nucleon->parent = this;
+    ordered.insert(insert_point, &nucleon);
 
-    new_nucleon->single_likelihood = SingleLikelihood(*new_nucleon);
-    likelihood *= new_nucleon->single_likelihood;
-    new_nucleon->pairwise_likelihoods.clear();
+    nucleon.cube = &FindCube(nucleon.x, nucleon.y, nucleon.z, \
+                                  nucleon.cube_i, nucleon.cube_j, nucleon.cube_k);
+    nucleon.cube->push_back(&nucleon);
+    nucleon.parent = this;
+
+    nucleon.single_likelihood = SingleLikelihood(nucleon);
+    likelihood *= nucleon.single_likelihood;
+    nucleon.pairwise_likelihoods.clear();
     //in this case the pairwise max is 0 so we only consider single body
     if(pairwise_units == 0) {
       return ++nucleon_count;
     }
 
     //the key here is that the nucleon is shifted to satisfy the continuous boundary conditions
-    for(int i = new_nucleon->cube_i - pairwise_units; i <= new_nucleon->cube_i + pairwise_units; i++) {
+    for(int i = nucleon.cube_i - pairwise_units; i <= nucleon.cube_i + pairwise_units; i++) {
         double x_offset = -2.0*length*double( (i/(2*units)) - (i<0?1:0));
-        new_nucleon->x += x_offset;
-        for(int j = new_nucleon->cube_j - pairwise_units; j <= new_nucleon->cube_j + pairwise_units; j++) {
+        nucleon.x += x_offset;
+        for(int j = nucleon.cube_j - pairwise_units; j <= nucleon.cube_j + pairwise_units; j++) {
             double y_offset = -2.0*length*double( (j/(2*units)) - (j<0?1:0));
-            new_nucleon->y += y_offset;
-            for(int k = new_nucleon->cube_k - pairwise_units; k <= new_nucleon->cube_k + pairwise_units; k++) {
+            nucleon.y += y_offset;
+            for(int k = nucleon.cube_k - pairwise_units; k <= nucleon.cube_k + pairwise_units; k++) {
                 double z_offset = -2.0*length*double( (k/(2*units)) - (k<0?1:0));
-                new_nucleon->z += z_offset;
+                nucleon.z += z_offset;
                 nucleon_array &cube = cubes[i%(units*2)][j%(units*2)][k%(units*2)];
                 for(nucleon_array::iterator it = cube.begin(); it != cube.end(); it++) {
-                    if(*it != new_nucleon) {
-                        const double pair_likelihood = PairwiseLikelihood(**it, *new_nucleon);
+                    if(*it != &nucleon) {
+                        const double pair_likelihood = PairwiseLikelihood(**it, nucleon);
                         likelihood *= pair_likelihood;
-                        new_nucleon->pairwise_likelihoods.push_back(std::make_pair(*it, pair_likelihood));
-                        (*it)->pairwise_likelihoods.push_back(std::make_pair(new_nucleon, pair_likelihood));
+                        nucleon.pairwise_likelihoods.push_back(std::make_pair(*it, pair_likelihood));
+                        (*it)->pairwise_likelihoods.push_back(std::make_pair(&nucleon, pair_likelihood));
                     }
                 }
-                new_nucleon->z -= z_offset;
+                nucleon.z -= z_offset;
             }
-            new_nucleon->y -= y_offset;
+            nucleon.y -= y_offset;
         }
-        new_nucleon->x -= x_offset;
+        nucleon.x -= x_offset;
     }
 
     return ++nucleon_count;
@@ -181,7 +185,7 @@ void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y,
       nucleon->x = x;
       nucleon->y = y;
       nucleon->z = z;
-      InsertNucleon(*nucleon, insert_point);
+      InsertExistingNucleon(*nucleon, insert_point);
       delete nucleon;
     }
 }

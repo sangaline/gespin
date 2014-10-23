@@ -24,6 +24,7 @@ class NucleonCollection {
     nucleon_array::iterator RemoveNucleonFromCube(Nucleon *nucleon);
     nucleon_array::iterator RemoveNucleonFromOrdered(Nucleon *nucleon);
     void BringInsideRegion(Nucleon *nucleon);
+    unsigned int InsertExistingNucleon(Nucleon &nucleon, nucleon_array::iterator insert_point);
 
     std::function<double(Nucleon&)> single_likelihood;
     std::function<double(Nucleon&, Nucleon&)> pairwise_likelihood;
