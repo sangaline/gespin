@@ -112,16 +112,13 @@ void NucleonCollection::UpdateLikelihood() {
 }
 
 NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z, int &i, int &j, int &k) const {
-    remquo(x, cube_length, &i);
-    remquo(y, cube_length, &j);
-    remquo(z, cube_length, &k);
+    i = floor(x/cube_length);
+    j = floor(y/cube_length);
+    k = floor(z/cube_length);
 
-    static const int units_minus_one = units - 1;
-    static const unsigned int units_times_two = units*2;
-
-    i = (i + units_minus_one)%units_times_two;
-    j = (j + units_minus_one)%units_times_two;
-    k = (k + units_minus_one)%units_times_two;
+    i = (i + units)%(2*units);
+    j = (j + units)%(2*units);
+    k = (k + units)%(2*units);
 
     return cubes[i][j][k];
 }
