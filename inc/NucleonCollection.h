@@ -20,7 +20,7 @@ class NucleonCollection {
     //the full number of cubes is thus (2*units)^3
     unsigned int units;
     double length, cube_length;
-    unsigned int pairwise_units;
+    int pairwise_units;
 
     void RemoveNucleonFromCube(Nucleon *nucleon);
     void RemoveNucleonFromOrdered(Nucleon *nucleon);
