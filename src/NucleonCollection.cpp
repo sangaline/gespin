@@ -128,7 +128,7 @@ void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y,
         new_cube.push_back(nucleon);
         nucleon->cube = &new_cube;
 
-        //keep it instide the region
+        //keep it inside the region
         while(x > length) x -= length;
         while(x < -length) x += length;
         while(y > length) y -= length;
@@ -140,6 +140,10 @@ void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y,
     nucleon->x = x;
     nucleon->y = y;
     nucleon->z = z;
+
+    const double new_likelihood = LikelihoodContribution(nucleon);
+    likelihood *= new_likelihood/nucleon->likelihood_contribution;
+    nucleon->likelihood_contribution = new_likelihood;
 }
 
 void NucleonCollection::RemoveNucleonFromCube(Nucleon *nucleon) {

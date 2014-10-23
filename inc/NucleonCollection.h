@@ -12,6 +12,7 @@ class NucleonCollection {
     nucleon_array ***cubes;
     nucleon_array ordered;
 
+    double likelihood;
     unsigned int nucleon_count;
     double LikelihoodContribution(Nucleon *nucleon);
 
