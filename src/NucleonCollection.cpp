@@ -44,45 +44,71 @@ NucleonCollection::~NucleonCollection() {
 }
 
 unsigned int NucleonCollection::AddNucleon(const Nucleon& nucleon) {
-    Nucleon *new_nucleon = new Nucleon(nucleon);
-    ordered.push_back(new_nucleon);
-
-    new_nucleon->cube = &FindCube(nucleon);
-    new_nucleon->cube->push_back(new_nucleon);
-    new_nucleon->parent = this;
-    return ++nucleon_count;
+  return InsertNucleon(nucleon, ordered.end());
 }
 
-double NucleonCollection::LikelihoodContribution(Nucleon *nucleon) {
-    double likelihood_contribution = SingleLikelihood(*nucleon);
+unsigned int NucleonCollection::InsertNucleon(const Nucleon& nucleon, NucleonCollection::nucleon_array::iterator insert_point) {
+    Nucleon *new_nucleon = new Nucleon(nucleon);
+    BringInsideRegion(new_nucleon);
+
+    ordered.insert(insert_point, new_nucleon);
+
+    new_nucleon->cube = &FindCube(new_nucleon->x, new_nucleon->y, new_nucleon->z, \
+                                  new_nucleon->cube_i, new_nucleon->cube_j, new_nucleon->cube_k);
+    new_nucleon->cube->push_back(new_nucleon);
+    new_nucleon->parent = this;
+
+    new_nucleon->single_likelihood = SingleLikelihood(*new_nucleon);
+    likelihood *= new_nucleon->single_likelihood;
+    new_nucleon->pairwise_likelihoods.clear();
     //in this case the pairwise max is 0 so we only consider single body
     if(pairwise_units == 0) {
-      return likelihood_contribution;
+      return ++nucleon_count;
     }
 
     //the key here is that the nucleon is shifted to satisfy the continuous boundary conditions
-    for(int i = nucleon->cube_i - pairwise_units; i <= nucleon->cube_i + pairwise_units; i++) {
+    for(int i = new_nucleon->cube_i - pairwise_units; i <= new_nucleon->cube_i + pairwise_units; i++) {
         double x_offset = -2.0*length*double( (i/(2*units)) - (i<0?1:0));
-        nucleon->x += x_offset;
-        for(int j = nucleon->cube_j - pairwise_units; j <= nucleon->cube_j + pairwise_units; j++) {
+        new_nucleon->x += x_offset;
+        for(int j = new_nucleon->cube_j - pairwise_units; j <= new_nucleon->cube_j + pairwise_units; j++) {
             double y_offset = -2.0*length*double( (j/(2*units)) - (j<0?1:0));
-            nucleon->y += y_offset;
-            for(int k = nucleon->cube_k - pairwise_units; k <= nucleon->cube_k + pairwise_units; k++) {
+            new_nucleon->y += y_offset;
+            for(int k = new_nucleon->cube_k - pairwise_units; k <= new_nucleon->cube_k + pairwise_units; k++) {
                 double z_offset = -2.0*length*double( (k/(2*units)) - (k<0?1:0));
-                nucleon->z += z_offset;
-                for(nucleon_array::iterator it = cubes[i][j][k].begin(); it != cubes[i][j][k].end(); it++) {
-                    if(*it != nucleon) {
-                        likelihood_contribution *= PairwiseLikelihood(**it, *nucleon);
+                new_nucleon->z += z_offset;
+                nucleon_array &cube = cubes[i%(units*2)][j%(units*2)][k%(units*2)];
+                for(nucleon_array::iterator it = cube.begin(); it != cube.end(); it++) {
+                    if(*it != new_nucleon) {
+                        const double pair_likelihood = PairwiseLikelihood(**it, *new_nucleon);
+                        likelihood *= pair_likelihood;
+                        new_nucleon->pairwise_likelihoods.push_back(std::make_pair(*it, pair_likelihood));
+                        (*it)->pairwise_likelihoods.push_back(std::make_pair(new_nucleon, pair_likelihood));
                     }
                 }
-                nucleon->z -= z_offset;
+                new_nucleon->z -= z_offset;
             }
-            nucleon->y -= y_offset;
+            new_nucleon->y -= y_offset;
         }
-        nucleon->x -= x_offset;
+        new_nucleon->x -= x_offset;
     }
 
-    return likelihood_contribution;
+    return ++nucleon_count;
+}
+
+void NucleonCollection::UpdateLikelihood() {
+    likelihood = 1.0;
+    for(nucleon_array::iterator it1 = ordered.begin(); it1 != ordered.end(); it1++) {
+        (*it1)->single_likelihood = SingleLikelihood(**it1);
+        likelihood *= pow((*it1)->single_likelihood, 2);
+
+        std::vector< std::pair<Nucleon*, double> >::iterator it2;
+        for(it2 = (*it1)->pairwise_likelihoods.begin(); it2 != (*it1)->pairwise_likelihoods.end(); it2++) {
+            it2->second = PairwiseLikelihood(**it1, *(it2->first));
+            likelihood *= it2->second;
+        }
+    }
+    //this impletmentation double counts everything so we need to take the square root
+    likelihood = sqrt(likelihood);
 }
 
 NucleonCollection::nucleon_array& NucleonCollection::FindCube(double x, double y, double z, int &i, int &j, int &k) const {
@@ -120,51 +146,64 @@ void NucleonCollection::Reset(bool delete_nucleons) {
     nucleon_count = 0;
 }
 
+void NucleonCollection::BringInsideRegion(Nucleon *nucleon) {
+    while(nucleon->x > length) nucleon->x -= 2.0*length;
+    while(nucleon->x < -length) nucleon->x += 2.0*length;
+    while(nucleon->y > length) nucleon->y -= 2.0*length;
+    while(nucleon->y < -length) nucleon->y += 2.0*length;
+    while(nucleon->z > length) nucleon->z -= 2.0*length;
+    while(nucleon->z < -length) nucleon->z += 2.0*length;
+}
+
 void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y, double z) {
-    nucleon_array new_cube = FindCube(x, y, z);
-
-    if(&new_cube != nucleon->cube) {
-        RemoveNucleonFromCube(nucleon);
-        new_cube.push_back(nucleon);
-        nucleon->cube = &new_cube;
-
-        //keep it inside the region
-        while(x > length) x -= length;
-        while(x < -length) x += length;
-        while(y > length) y -= length;
-        while(y < -length) y += length;
-        while(z > length) z -= length;
-        while(z < -length) z += length;
+    nucleon_array new_cube = FindCube(x, y, z, nucleon->cube_i, nucleon->cube_j, nucleon->cube_k);
+    if(&new_cube == nucleon->cube) {
+        //TODO: here we can just update the nucleons in the list
     }
 
+    NucleonCollection::nucleon_array::iterator insert_point = RemoveNucleon(nucleon);
     nucleon->x = x;
     nucleon->y = y;
     nucleon->z = z;
-
-    const double new_likelihood = LikelihoodContribution(nucleon);
-    likelihood *= new_likelihood/nucleon->likelihood_contribution;
-    nucleon->likelihood_contribution = new_likelihood;
+    InsertNucleon(*nucleon, insert_point);
+    delete nucleon;
 }
 
-void NucleonCollection::RemoveNucleonFromCube(Nucleon *nucleon) {
+NucleonCollection::nucleon_array::iterator NucleonCollection::RemoveNucleonFromCube(Nucleon *nucleon) {
     for(nucleon_array::iterator it = nucleon->cube->begin(); it != nucleon->cube->end(); it++) {
         if(*it == nucleon) {
-            nucleon->cube->erase(it);
-            break;
+            return nucleon->cube->erase(it);
         }
     }
+    return nucleon->cube->end();
 }
 
-void NucleonCollection::RemoveNucleonFromOrdered(Nucleon *nucleon) {
+NucleonCollection::nucleon_array::iterator NucleonCollection::RemoveNucleonFromOrdered(Nucleon *nucleon) {
     for(nucleon_array::iterator it = ordered.begin(); it != ordered.end(); it++) {
         if(*it == nucleon) {
-            ordered.erase(it);
-            break;
+            return ordered.erase(it);
         }
     }
+    return ordered.end();
 }
 
-void NucleonCollection::RemoveNucleon(Nucleon *nucleon) {
+NucleonCollection::nucleon_array::iterator NucleonCollection::RemoveNucleon(Nucleon *nucleon) {
+    likelihood /= nucleon->single_likelihood;
+
+    std::vector< std::pair<Nucleon*, double> >::iterator it1;
+    for(it1 = nucleon->pairwise_likelihoods.begin(); it1 != nucleon->pairwise_likelihoods.end(); it1++) {
+        likelihood /= (*it1).second;
+        Nucleon *nucleon2 = (*it1).first;
+        std::vector< std::pair<Nucleon*, double> >::iterator it2;
+        for(it2 = nucleon2->pairwise_likelihoods.begin(); it2 != nucleon2->pairwise_likelihoods.end(); it2++) {
+            if(nucleon == (*it2).first) {
+                nucleon2->pairwise_likelihoods.erase(it2);
+                break;
+            }
+        }
+    }
+    nucleon->pairwise_likelihoods.clear();
+
     RemoveNucleonFromCube(nucleon);
-    RemoveNucleonFromOrdered(nucleon);
+    return RemoveNucleonFromOrdered(nucleon);
 }
