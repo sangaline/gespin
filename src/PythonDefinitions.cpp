@@ -4,10 +4,12 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/extract.hpp>
 #include <boost/python/errors.hpp>
+#include <boost/python/make_function.hpp>
 
 //gespin include files
 #include "Nucleon.h"
 #include "NucleonCollection.h"
+#include "SingleBodyLikelihoods.h"
 
 using namespace boost::python;
 
@@ -97,8 +99,13 @@ namespace NucleonCollectionHelpers {
 };
 /********************************************************/
 
+void export_single_body_likelihoods();
 BOOST_PYTHON_MODULE(core)
 {
+    // specify that this module is actually a package
+    object package = scope();
+    package.attr("__path__") = "core";
+
 /***************** Nucleon identities ***********************/
     enum_<NucleonIdentity>("nucleon_identities")
         .value("unspecified", NucleonIdentity::unspecified)
@@ -145,4 +152,49 @@ BOOST_PYTHON_MODULE(core)
         .add_property("likelihood", &NucleonCollection::Likelihood)
     ;
 /********************************************************/
+
+    export_single_body_likelihoods();
+}
+
+
+//Submodules:
+
+/***************** SingleBodyLikelihoods helpers ********/
+namespace SingleBodyLikelihoodsHelpers {
+    object WoodsSaxonLikelihoodFunction(SingleBodyLikelihoods::WoodsSaxon& woods_saxon) {
+        typedef boost::mpl::vector<double, const Nucleon&> func_sig;
+        return make_function(woods_saxon.LikelihoodFunction(), default_call_policies(), func_sig());
+    }
+
+    double WoodsSaxonLikelihood1(SingleBodyLikelihoods::WoodsSaxon& woods_saxon, const Nucleon& nucleon) {
+        return woods_saxon.Likelihood(nucleon);
+    }
+
+    double WoodsSaxonLikelihood2(SingleBodyLikelihoods::WoodsSaxon& woods_saxon, const double r, const double theta) {
+        return woods_saxon.Likelihood(r, theta);
+    }
+}
+/********************************************************/
+
+void export_single_body_likelihoods()
+{
+    //create the functions submodule and move to that scope
+    object submodule(handle<>(borrowed(PyImport_AddModule("core.single_body_likelihoods"))));
+    scope().attr("single_body_likelihoods") = submodule;
+    scope util_scope = submodule;
+
+    class_<SingleBodyLikelihoods::WoodsSaxon>("WoodsSaxon", init<double, double>())
+        .def(init<double, double, double>())
+        .def(init<double, double, double, double>())
+        .def(init<double, double, double, double, double>())
+        .def("likelihood", &SingleBodyLikelihoodsHelpers::WoodsSaxonLikelihood1)
+        .def("likelihood", &SingleBodyLikelihoodsHelpers::WoodsSaxonLikelihood2)
+        //this creates a standalone function that exists outside of the WoodsSaxon object
+        .add_property("likelihood_function", &SingleBodyLikelihoodsHelpers::WoodsSaxonLikelihoodFunction)
+    ;
+
+    def("Au197", &SingleBodyLikelihoods::Au197);
+    def("Pb208", &SingleBodyLikelihoods::Pb208);
+    def("Cu63", &SingleBodyLikelihoods::Cu63);
+    def("U238", &SingleBodyLikelihoods::U238);
 }
