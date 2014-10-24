@@ -14,7 +14,6 @@ namespace SingleBodyLikelihoods {
           double Likelihood(const Nucleon& nucleon) const;
           static double Likelihood(const double r, const double theta, const double R, const double a, const double B_20 = 0, const double B_40 = 0, const double w = 0);
           std::function<double(const Nucleon&)> LikelihoodFunction() const;
-
     };
     typedef std::function<double(Nucleon& nucleon)> single_body_function;
 

@@ -18,7 +18,7 @@ NucleonCollection::NucleonCollection(double pairwise_max, unsigned int units, do
     single_likelihood = [](Nucleon&) { return 1; };
     pairwise_likelihood = [](Nucleon&, Nucleon&) { return 1; };
 
-    cached_nucleon = 0;
+    recording = false;
 }
 
 NucleonCollection::NucleonCollection(const NucleonCollection &nucleon_collection) {
@@ -158,21 +158,57 @@ void NucleonCollection::BringInsideRegion(Nucleon *nucleon) {
     while(nucleon->z < -length) nucleon->z += 2.0*length;
 }
 
-bool NucleonCollection::UndoLastMove() {
-    if(cached_nucleon) {
-        SetNucleonPosition(cached_nucleon, cached_x, cached_y, cached_z);
-        //these is the key part, in case the last move resulted in a likelihood of 0
-        likelihood = cached_likelihood;
-        cached_nucleon = 0;
-        return true;
+double NucleonCollection::Checkpoint() {
+    cached_likelihoods.clear();
+    cached_nucleons.clear();
+    cached_x.clear();
+    cached_y.clear();
+    cached_z.clear();
+    recording = true;
+    return likelihood;
+}
+
+double NucleonCollection::Revert() {
+    if(cached_nucleons.size() == 0) {
+        return likelihood;
     }
-    return false;
+
+    recording = false;
+    Nucleon *last_nucleon = 0;
+    double last_x, last_y, last_z, last_likelihood;
+    while(cached_nucleons.size() > 0) {
+        Nucleon* next_nucleon = cached_nucleons.back(); cached_nucleons.pop_back();
+        if(next_nucleon != last_nucleon && last_nucleon != 0) {
+            SetNucleonPosition(last_nucleon, last_x, last_y, last_z);
+        }
+        last_nucleon = next_nucleon;
+        last_likelihood = cached_likelihoods.back(); 
+        last_x = cached_x.back();
+        last_y = cached_y.back();
+        last_z = cached_z.back();
+        cached_likelihoods.pop_back();
+        cached_x.pop_back();
+        cached_y.pop_back();
+        cached_z.pop_back();
+    }
+    SetNucleonPosition(last_nucleon, last_x, last_y, last_z);
+    likelihood = last_likelihood;
+    recording = true;
+    return likelihood;
+}
+
+void NucleonCollection::CacheState(Nucleon *nucleon) {
+    cached_likelihoods.push_back(likelihood);
+    cached_x.push_back(nucleon->x); 
+    cached_y.push_back(nucleon->y); 
+    cached_z.push_back(nucleon->z); 
+    cached_nucleons.push_back(nucleon);
 }
 
 void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y, double z) {
-    cached_likelihood = likelihood;
-    cached_x = x; cached_y = y; cached_z = z;
-    cached_nucleon = nucleon;
+    if(recording) {
+        CacheState(nucleon);
+    }
 
     nucleon_array& new_cube = FindCube(x, y, z, nucleon->cube_i, nucleon->cube_j, nucleon->cube_k);
     nucleon->x = x;

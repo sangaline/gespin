@@ -21,8 +21,10 @@ class NucleonCollection {
     double length, cube_length;
     int pairwise_units;
 
-    double cached_likelihood, cached_x, cached_y, cached_z;
-    Nucleon *cached_nucleon;
+    bool recording;
+    std::vector<double> cached_likelihoods, cached_x, cached_y, cached_z;
+    std::vector<Nucleon*> cached_nucleons;
+    void CacheState(Nucleon* nucleon);
 
     nucleon_array::iterator RemoveNucleonFromCube(Nucleon *nucleon);
     nucleon_array::iterator RemoveNucleonFromOrdered(Nucleon *nucleon);
@@ -51,8 +53,9 @@ class NucleonCollection {
     void SetNucleonY(Nucleon *nucleon, double y);
     void SetNucleonZ(Nucleon *nucleon, double z);
     void SetNucleonPosition(Nucleon *nucleon, double x, double y, double z);
-    //only the last move is cached currently
-    bool UndoLastMove();
+
+    double Checkpoint();
+    double Revert();
 
     nucleon_array& FindCube(double x, double y, double z, int &i, int &j, int &k) const;
     nucleon_array& FindCube(double x, double y, double z) const;
