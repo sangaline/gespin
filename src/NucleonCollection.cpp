@@ -174,7 +174,10 @@ void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y,
     cached_x = x; cached_y = y; cached_z = z;
     cached_nucleon = nucleon;
 
-    nucleon_array new_cube = FindCube(x, y, z, nucleon->cube_i, nucleon->cube_j, nucleon->cube_k);
+    nucleon_array& new_cube = FindCube(x, y, z, nucleon->cube_i, nucleon->cube_j, nucleon->cube_k);
+    nucleon->x = x;
+    nucleon->y = y;
+    nucleon->z = z;
     if(&new_cube == nucleon->cube) {
         likelihood /= nucleon->single_likelihood;
         nucleon->single_likelihood = SingleLikelihood(*nucleon);
@@ -198,12 +201,8 @@ void NucleonCollection::SetNucleonPosition(Nucleon *nucleon, double x, double y,
         }
     }
     else {
-      NucleonCollection::nucleon_array::iterator insert_point = RemoveNucleon(nucleon);
-      nucleon->x = x;
-      nucleon->y = y;
-      nucleon->z = z;
-      InsertExistingNucleon(*nucleon, insert_point);
-      delete nucleon;
+        NucleonCollection::nucleon_array::iterator insert_point = RemoveNucleon(nucleon);
+        InsertExistingNucleon(*nucleon, insert_point);
     }
 }
 
