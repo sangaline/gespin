@@ -254,6 +254,7 @@ NucleonCollection::nucleon_array::iterator NucleonCollection::RemoveNucleonFromC
 NucleonCollection::nucleon_array::iterator NucleonCollection::RemoveNucleonFromOrdered(Nucleon *nucleon) {
     for(nucleon_array::iterator it = ordered.begin(); it != ordered.end(); it++) {
         if(*it == nucleon) {
+            nucleon_count--;
             return ordered.erase(it);
         }
     }
