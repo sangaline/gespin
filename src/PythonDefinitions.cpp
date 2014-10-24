@@ -10,6 +10,7 @@
 #include "Nucleon.h"
 #include "NucleonCollection.h"
 #include "SingleBodyLikelihoods.h"
+#include "PairwiseLikelihoods.h"
 
 using namespace boost::python;
 
@@ -100,6 +101,7 @@ namespace NucleonCollectionHelpers {
 /********************************************************/
 
 void export_single_body_likelihoods();
+void export_pairwise_likelihoods();
 BOOST_PYTHON_MODULE(core)
 {
     // specify that this module is actually a package
@@ -154,6 +156,7 @@ BOOST_PYTHON_MODULE(core)
 /********************************************************/
 
     export_single_body_likelihoods();
+    export_pairwise_likelihoods();
 }
 
 
@@ -172,6 +175,23 @@ namespace SingleBodyLikelihoodsHelpers {
 
     double WoodsSaxonLikelihood2(SingleBodyLikelihoods::WoodsSaxon& woods_saxon, const double r, const double theta) {
         return woods_saxon.Likelihood(r, theta);
+    }
+}
+/********************************************************/
+
+/***************** PairwiseLikelihoods helpers ********/
+namespace PairwiseLikelihoodsHelpers {
+    object GaussianRepulsionLikelihoodFunction(PairwiseLikelihoods::GaussianRepulsion& gaussian_repulsion) {
+        typedef boost::mpl::vector<double, const Nucleon&, const Nucleon&> func_sig;
+        return make_function(gaussian_repulsion.LikelihoodFunction(), default_call_policies(), func_sig());
+    }
+
+    double GaussianRepulsionLikelihood1(PairwiseLikelihoods::GaussianRepulsion& gaussian_repulsion, const Nucleon& nucleon1, const Nucleon& nucleon2) {
+        return gaussian_repulsion.Likelihood(nucleon1, nucleon2);
+    }
+
+    double GaussianRepulsionLikelihood2(PairwiseLikelihoods::GaussianRepulsion& gaussian_repulsion, const double r) {
+        return gaussian_repulsion.Likelihood(r);
     }
 }
 /********************************************************/
@@ -197,4 +217,21 @@ void export_single_body_likelihoods()
     def("Pb208", &SingleBodyLikelihoods::Pb208);
     def("Cu63", &SingleBodyLikelihoods::Cu63);
     def("U238", &SingleBodyLikelihoods::U238);
+}
+
+void export_pairwise_likelihoods()
+{
+    //create the functions submodule and move to that scope
+    object submodule(handle<>(borrowed(PyImport_AddModule("core.pairwise_likelihoods"))));
+    scope().attr("pairwise_likelihoods") = submodule;
+    scope util_scope = submodule;
+
+    class_<PairwiseLikelihoods::GaussianRepulsion>("GaussianRepulsion", init<>())
+        .def(init<double>())
+        .def(init<double, double>())
+        .def("likelihood", &PairwiseLikelihoodsHelpers::GaussianRepulsionLikelihood1)
+        .def("likelihood", &PairwiseLikelihoodsHelpers::GaussianRepulsionLikelihood2)
+        //this creates a standalone function that exists outside of the GaussianRepulsion object
+        .add_property("likelihood_function", &PairwiseLikelihoodsHelpers::GaussianRepulsionLikelihoodFunction)
+    ;
 }
